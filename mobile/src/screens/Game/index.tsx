@@ -14,9 +14,11 @@ import logoImg from "../../assets/logo-nlw-esports.png";
 
 import { styles } from "./styles";
 import { DuoCard, DuoCardProps } from "../../components/DuoCard";
+import { DuoMatch } from "../../components/DuoMatch";
 
 export function Game() {
   const [duos, setDuos] = useState<DuoCardProps[]>([]);
+  const [discordDuoSelected, setDiscordDuoSelected] = useState('');
 
   const route = useRoute();
   const game = route.params as GameParams;
@@ -31,6 +33,12 @@ export function Game() {
       .then((response) => response.json())
       .then((data) => setDuos(data));
   });
+  
+  async function handleGetDiscordUser(adsId: string) {
+    fetch(`http://192.168.0.18:3333/ads/${adsId}/discord`)
+      .then((response) => response.json())
+      .then((data) => setDiscordDuoSelected(data.discord));
+  }
 
   return (
     <Background>
@@ -60,7 +68,7 @@ export function Game() {
         <FlatList
           data={duos}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <DuoCard data={item} onConnect={() => {}} />}
+          renderItem={({ item }) => <DuoCard data={item} onConnect={() => handleGetDiscordUser(item.id)} />}
           horizontal
           style={styles.containerList}
           contentContainerStyle={[duos.length > 0 ? styles.contentList : styles.emptyListContent]}
@@ -68,6 +76,12 @@ export function Game() {
           ListEmptyComponent={() => (
             <Text style={styles.emptyListText}>Não há anúncios publicados ainda.</Text>
           )}
+        />
+        
+        <DuoMatch
+          visible={discordDuoSelected.length > 0}
+          discord={discordDuoSelected}
+          onClose={() => setDiscordDuoSelected('')}
         />
       </SafeAreaView>
     </Background>
